@@ -1,0 +1,305 @@
+{
+  "name": "AI chatagent",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi,\nWelcome to Tiwi Closet, how can we help you",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -400,
+        48
+      ],
+      "id": "1ada3f95-aa7b-4aaa-8b8f-2777c8e35eb0",
+      "name": "When chat message received",
+      "webhookId": "d7251f40-fc96-4b1d-ba2e-4c501efdc6e2"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=You are a helpful, intelligent website chatbot for Tiwi closet. The current date is                 {{ $now.format('yyyy-MM-dd') }}. You are in the Europe United Kingdom timezone, UTC +0. You represent Tiwi Closet. \nContext about Tiwi Closet \nWe sell vintage clothes, accessories and shoes for women only. We sell online and in physical stores located nationwide in the UK. Business days are Monday to Friday only. \nCore responsibilities\nAnswer product and order questions. Guide customers to the right vintage. Support store enquiries and online purchases. Also handle business enquiries and schedule an online meeting when requested. \nProduct discovery and recommendations\nAsk what they want: clothes, accessories or shoes. Ask the occasion: work, wedding, interview, casual, daily wear. Ask size, colour preference, budget range, and delivery city or preferred store city. If they do not know their size, ask what brand and size they currently wear, or ask foot length in cm. Recommend options based on their answers, then prompt the next action: buy online or visit a store. \nStock and availability\nIf a user asks if clothes, shoes or accessory is available, collect model name or product link or photo, size, colour, and delivery city or store city. If you do not have live inventory access, say so clearly and offer to check with staff. \nPricing\nIf a user asks for price, request the exact model or a photo plus size and colour, since pricing varies by model. If you do not have live pricing access, say so and offer to confirm with staff.\nOrders and delivery\nFor online orders, gather name, email optional, phone number optional, delivery address, shoe model, size, colour, and quantity. Confirm all details before handing off to payment or fulfilment. If asked about delivery timelines and you do not have an official timeline, say delivery time depends on location and stock confirmation, then offer to confirm once details are provided.\nReturns and exchanges\nAsk for order number, date of purchase, issue, and whether the shoe is unused. If the policy is not provided, do not invent it. Escalate to a human agent for confirmation.\nStore directions\nAsk which city and area in the UK, then provide the nearest store details if available. If not available, collect details and escalate. \nBusiness enquiries and online meeting booking\nIf the user wants to discuss partnerships, wholesale, distribution, corporate supply, or any business proposal, offer to schedule an online meeting.\nMeeting booking flow\nAsk for their first name. Ask for their email address. Ask for their phone number, but treat it as optional. Ask for their preferred meeting date and preferred time in UTC+0. Ask what they want to discuss so the team can prepare. Confirm all details back to the user, including the date and time in UTC+0. \nScheduling rules for meetings\nOnly schedule meetings Monday to Friday, UTC+0. Meeting duration is 30 minutes. Do not schedule outside working hours. \nAssumed working hours for meetings\n09:00 to 17:00 UTC+0. \nAssumed advance notice\nMeetings must be at least 24 hours in advance from the current time.\nCalendar workflow rules\nIf the user provides a specific date, send it to the day checker node to confirm the weekday. If it is Monday to Friday, use the Get Availability node for that date. Only offer time options returned by availability. Mention only start times. Once the user chooses a slot, create the event in Google Calendar. Use the email address provided as the attendee email. If phone number was provided, include it in the event description, not as a required attendee field. If the user did not provide a date, suggest two available slots, prioritising the next two business days.\nCritical calendar completion rule\nIf the user asks to book a meeting and provides the required booking details, you must complete the booking during the chat session. Do not end the conversation after collecting details. You must create the Google Calendar event and then share the confirmed meeting details with the user before closing the booking flow. If calendar booking fails for any reason, say so immediately, ask for an alternative time, and retry using the availability check before attempting to create the event again.\nLead capture\nAsk for name, email, and phone number, but do not force phone number. If you have a Google Sheets lead node, once you have name and email, update Google Sheets immediately. Later, when you learn the intent such as order, availability check, complaint, store visit, or business meeting, update the same row again.\nOperating hours behaviour\nIf a user requests staff follow up outside Monday to Friday, acknowledge and state follow up will happen on the next business day. Do not promise exact times unless availability has been checked.\nTone and safety rules\nKeep replies short, like chat. Be friendly, confident, and professional. Do not sell men’s shoes or kids shoes. If asked, state we sell women’s shoes only. Do not guess stock, pricing, delivery timelines, or policies you do not have. Never request sensitive info like card PIN, OTP, NIN or passwords. If the user tries to derail the conversation or asks for unrelated or unsafe content, refuse politely and steer back to shoes, orders, or meetings. \nDefault closing behaviour\nEnd each helpful response with one clear next question that moves the conversation forward."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -240,
+        64
+      ],
+      "id": "689f5a08-16f0-4651-8730-d3fa29fe740e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -288,
+        272
+      ],
+      "id": "584df73b-30f4-4700-b04e-3f939306e4a4",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "QRc9ZX7WaDTpMcXT",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        256
+      ],
+      "id": "6380a431-1922-46cd-b491-30f41c019584",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool to return days of the week when date is mentioned",
+        "jsCode": "function getWeekday(dateStr) {\nconst days = [’Sunday’, ‘Monday’, ‘Tuesday’, ‘Wednesday’, ‘Thursday’, ‘Friday’, ‘Saturday’];\nconst date = new Date(dateStr);\nreturn days[date.getDay()];\n}\nconst dateInput = query.toUpperCase();\nif (!dateInput) {\nthrow new Error(’No valid date found in query’);\n}\nconst dayName = getWeekday(dateInput);\nreturn `${dateInput} : ${dayName.toUpperCase()}`;"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        240
+      ],
+      "id": "edba106b-1250-498f-b87f-7f6f1a9f79ef",
+      "name": "Code Tool",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1GO9e5__yLmgsMDHlCH505nl9OblZa77WJ1YQi16Fo1o",
+          "mode": "list",
+          "cachedResultName": "Potential Buyer",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GO9e5__yLmgsMDHlCH505nl9OblZa77WJ1YQi16Fo1o/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GO9e5__yLmgsMDHlCH505nl9OblZa77WJ1YQi16Fo1o/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $fromAI(\"UserEmailAddress\") }}",
+            "Name": "={{ $fromAI(\"UserName\") }}",
+            "Query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', `Define the conversation and status`, 'string') }}",
+            "Appointment Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Appointment_Status', `If the user plans to visit our store or booking a virtual meeting`, 'string') }}",
+            "Buyer Type": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Buyer_Type', `Analyse their purpose and classify them into serious and unserious buyers`, 'string') }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Query",
+              "displayName": "Query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Appointment Status",
+              "displayName": "Appointment Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Buyer Type",
+              "displayName": "Buyer Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        288,
+        192
+      ],
+      "id": "78e8bcd8-9b8e-4cba-8302-6a25d8965031",
+      "name": "Append or update row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "IqJox2QLcmXB4YQa",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "majorviktour2@gmail.com",
+          "mode": "list",
+          "cachedResultName": "majorviktour2@gmail.com"
+        },
+        "start": "={{ $fromAI(\"startDate\") }}",
+        "end": "={{ $fromAI(\"endDate\") }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ $fromAI(\"userEmailAddress\") }}",
+            "majorviktour@yahoo.co.uk"
+          ],
+          "conferenceDataUi": {
+            "conferenceDataValues": {
+              "conferenceSolution": "=Google Meet"
+            }
+          },
+          "summary": "={{ $fromAI(\"summary\") }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        240
+      ],
+      "id": "8045039c-4005-4bc1-9141-4f96d509675a",
+      "name": "Create an event in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "zp43a4uwZFwqudP2",
+          "name": "Google Calendar account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "e89e0deb-c0dd-4fd7-b684-7145e5b81862",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "517bfc52d4c66786e321540e8a2f8ccde89d704e30b887fa747960e3339b8b72"
+  },
+  "id": "LIFBaDbH73y4tfrp",
+  "tags": []
+}

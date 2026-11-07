@@ -1,0 +1,9 @@
+{
+  "enabled": true,
+  "message": "",
+  "disabledMessage": "This test version has been switched off. Ask Victor for the new one.",
+  "minBuild": 0,
+  "expires": "",
+  "latestVersion": "1.3.0",
+  "link": ""
+}
